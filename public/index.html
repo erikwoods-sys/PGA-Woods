@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PGA Championship 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #e8e8e8;
+      color: #222;
+      font-family: 'Georgia', serif;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .header {
+      text-align: center;
+      padding: 16px 0 12px;
+      border-bottom: 2px solid #2d6a3f;
+      margin-bottom: 20px;
+    }
+    h1 {
+      color: #1a472a;
+      font-size: 1.1em;
+      white-space: nowrap;
+    }
+    .presented {
+      color: #1a472a;
+      font-size: 0.95em;
+      margin-top: 4px;
+      font-weight: bold;
+    }
+    .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      margin-top: 10px;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .stat-label {
+      color: #555;
+      font-size: 0.75em;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .stat-value {
+      font-weight: bold;
+      color: #1a472a;
+      font-size: 1.1em;
+    }
+    .last-updated { color: #888; font-size: 0.75em; margin-top: 8px; }
+    .teams-container {
+      max-width: 600px;
+      margin: 0 auto 20px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .team-card { border-bottom: 1px solid #ddd; }
+    .team-card:last-child { border-bottom: none; }
+    .team-card.leader {
+      background: linear-gradient(135deg, #fffbe6 0%, #fff9d6 100%);
+      border-left: 4px solid #f0c040;
+    }
+    .team-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .team-header:active { background: rgba(0,0,0,0.03); }
+    .team-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .team-pos {
+      color: #999;
+      font-size: 0.85em;
+      width: 22px;
+      font-weight: bold;
+    }
+    .team-pos.first { color: #b8860b; font-size: 0.95em; }
+    .team-name {
+      color: #1a472a;
+      font-size: 1em;
+      font-weight: bold;
+    }
+    .team-name.first { color: #b8860b; }
+    .team-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .team-score {
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    .team-score.first-score { font-size: 1.4em; }
+    .chevron {
+      color: #999;
+      font-size: 0.9em;
+      transition: transform 0.3s;
+    }
+    .chevron.open { transform: rotate(180deg); }
+    .score-negative { color: #cc3333; }
+    .score-positive { color: #2d6a3f; }
+    .score-even { color: #333; }
+    .players-panel {
+      display: none;
+      background: #dde8dd;
+      border-top: 1px solid #b0c8b0;
+      box-shadow: inset 0 3px 6px rgba(0,0,0,0.08);
+    }
+    .players-panel.open { display: block; }
+    .round-header {
+      display: flex;
+      padding: 6px 16px 6px 20px;
+      font-size: 0.7em;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #ccdacc;
+    }
+    .round-header .rh-name { flex: 1; }
+    .round-header .rh-r { width: 40px; text-align: center; }
+    .round-header .rh-tot { width: 44px; text-align: right; }
+    .player-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px 10px 20px;
+      border-bottom: 1px solid #ccdacc;
+    }
+    .player-row:last-child { border-bottom: none; }
+    .player-row.counting { background: rgba(255,255,255,0.6); }
+    .player-row.counting .player-name {
+      color: #1a1a1a;
+      font-weight: bold;
+    }
+    .player-row.not-counting {
+      opacity: 0.5;
+      filter: blur(0.3px);
+    }
+    .player-name { font-size: 0.9em; flex: 1; }
+    .cut-badge {
+      font-size: 0.65em;
+      color: #fff;
+      background: #aaa;
+      border-radius: 3px;
+      padding: 1px 4px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .wd-badge {
+      font-size: 0.65em;
+      color: #fff;
+      background: #cc3333;
+      border-radius: 3px;
+      padding: 1px 4px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .round-cell {
+      width: 40px;
+      text-align: center;
+      font-size: 0.78em;
+      color: #555;
+      background: rgba(0,0,0,0.05);
+      border-radius: 4px;
+      padding: 2px 0;
+      margin-right: 4px;
+    }
+    .round-cell.penalty {
+      color: #cc3333;
+      background: rgba(204,51,51,0.08);
+    }
+    .player-score {
+      width: 44px;
+      text-align: right;
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+    .loading { text-align: center; padding: 50px; color: #666; }
+    .error { text-align: center; padding: 50px; color: #cc3333; }
+  </style>
+</head>
+<body>
+<div class="header">
+  <h1>PGA Championship 2026 — Betting — SLAM/NRP</h1>
+  <div class="presented">Presented by Woods</div>
+  <div class="stats-row">
+    <div class="stat">
+      <span class="stat-label">Teams</span>
+      <span class="stat-value">15</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Prize Pool</span>
+      <span class="stat-value">4 000 kr</span>
+    </div>
+  </div>
+  <div class="last-updated" id="lastUpdated">Loading...</div>
+</div>
+<div id="app">
+  <div class="loading">Loading scores...</div>
+</div>
+<script>
+const TEAMS = {
+  'Næsheim': ['Scheffler', 'Reitan', 'Smith', 'Kirk', 'Fitzpatrick'],
+  'Grouff': ['Scheffler', 'Reitan', 'Harman', 'Kirk', 'McIlroy'],
+  'Forthun': ['Fitzpatrick', 'Reitan', 'Theegala', 'Kirk', 'Schauffele'],
+  'Norheim': ['Scheffler', 'Reed', 'Cauley', 'Lipsky', 'Højgaard'],
+  'Haukvik': ['Scheffler', 'Spieth', 'Harman', 'Jarvis', 'Fleetwood'],
+  'Daffinrud': ['McIlroy', 'Lowry', 'Rai', 'Fisk', 'Young'],
+  'Heidenreich': ['Rose', 'Fitzpatrick', 'Rai', 'Donald', 'Hatton'],
+  'Wroll': ['McIlroy', 'Reitan', 'Harman', 'Riley', 'Young'],
+  'Baumann': ['Scheffler', 'Reitan', 'Rai', 'Snedeker', 'Young'],
+  'Magelssen': ['Åberg', 'Lowry', 'Rai', 'Hoge', 'Fowler'],
+  'Sverdrup': ['McIlroy', 'Reitan', 'Hisatsune', 'Schmid', 'Young'],
+  'Sagbakken': ['DeChambeau', 'Griffin', 'Theegala', 'Kirk', 'Young'],
+  'Ekjord': ['Scheffler', 'Reitan', 'Echavarria', 'Grillo', 'Rose'],
+  'Holter': ['Hovland', 'Noren', 'Neergaard-Petersen', 'Välimäki', 'Reitan'],
+  'Woods': ['McIlroy', 'Lowry', 'Rai', 'Saddier', 'Schauffele']
+};
+
+const CUT_LINE = 999;
+const R3_START = new Date('2026-05-16T15:30:00+02:00');
+const R4_START = new Date('2026-05-17T15:30:00+02:00');
+
+function formatScore(score) {
+  if (score === 999) return 'WD';
+  if (score === 0) return 'E';
+  if (score > 0) return '+' + score;
+  return score.toString();
+}
+function formatHalf(val) {
+  if (val === 0) return 'E';
+  if (val > 0) return '+' + val;
+  return val.toString();
+}
+function getScoreClass(score) {
+  if (score < 0) return 'score-negative';
+  if (score > 0) return 'score-positive';
+  return 'score-even';
+}
+function processPlayerData(espnData) {
+  const players = {};
+  try {
+    const competitions = espnData.events?.[0]?.competitions?.[0]?.competitors || [];
+    competitions.forEach(comp => {
+      const name = comp.athlete?.displayName || '';
+      const lastName = name.split(' ').slice(-1)[0];
+      const status = comp.status?.type?.name || '';
+      const withdrawn = status === 'STATUS_WITHDRAWN';
+      const espnRounds = comp.linescores?.map(r => r.displayValue || '-') || [];
+      const r1 = parseInt(espnRounds[0]) || 0;
+      const r2 = parseInt(espnRounds[1]) || 0;
+      const r1r2total = r1 + r2;
+      const missedCut = !withdrawn && r1r2total >= CUT_LINE;
+      let rounds = [...espnRounds];
+      let totalScore = parseInt(comp.score) || 0;
+      if (missedCut) {
+        const half = r1r2total / 2;
+        const now = new Date();
+        const r3val = now >= R3_START ? half : null;
+        const r4val = now >= R4_START ? half : null;
+        rounds = [
+          espnRounds[0] || '-',
+          espnRounds[1] || '-',
+          r3val !== null ? formatHalf(r3val) : '-',
+          r4val !== null ? formatHalf(r4val) : '-'
+        ];
+        totalScore = Math.round(
+          r1r2total
+          + (r3val !== null ? r3val : 0)
+          + (r4val !== null ? r4val : 0)
+        );
+      }
+      players[lastName] = {
+        fullName: name,
+        score: withdrawn ? 999 : totalScore,
+        missedCut,
+        withdrawn,
+        position: comp.status?.position?.displayName || '-',
+        rounds
+      };
+    });
+  } catch(e) {
+    console.error('Error processing player data:', e);
+  }
+  return players;
+}
+function calculateTeamScore(teamPlayers, playerData) {
+  const scores = teamPlayers.map(name => {
+    const player = playerData[name];
+    if (!player) return { name, score: 0, found: false, rounds: [] };
+    return {
+      name: player.fullName || name,
+      score: player.score,
+      missedCut: player.missedCut,
+      withdrawn: player.withdrawn,
+      position: player.position,
+      rounds: player.rounds,
+      found: true
+    };
+  });
+  const sorted = [...scores].sort((a, b) => a.score - b.score);
+  const counting = sorted.slice(0, 4);
+  const total = counting.reduce((sum, p) => sum + p.score, 0);
+  return { scores, counting, total };
+}
+function toggleTeam(id) {
+  const panel = document.getElementById('panel-' + id);
+  const chevron = document.getElementById('chevron-' + id);
+  panel.classList.toggle('open');
+  chevron.classList.toggle('open');
+}
+function renderApp(playerData) {
+  const teamResults = Object.entries(TEAMS).map(([teamName, players]) => {
+    const result = calculateTeamScore(players, playerData);
+    return { teamName, ...result };
+  });
+  teamResults.sort((a, b) => a.total - b.total);
+  let html = '<div class="teams-container">';
+  teamResults.forEach((team, idx) => {
+    const countingNames = team.counting.map(p => p.name);
+    const id = 'team' + idx;
+    const isFirst = idx === 0;
+    const maxR = Math.max(...team.scores.map(p => p.rounds?.length || 0), 2);
+    const roundHeaders = Array.from({length: maxR}, (_, i) =>
+      `<span class="rh-r">R${i+1}</span>`).join('');
+    html += `
+      <div class="team-card ${isFirst ? 'leader' : ''}">
+        <div class="team-header" onclick="toggleTeam('${id}')">
+          <div class="team-left">
+            <span class="team-pos ${isFirst ? 'first' : ''}">${idx + 1}</span>
+            <span class="team-name ${isFirst ? 'first' : ''}">${team.teamName}</span>
+          </div>
+          <div class="team-right">
+            <span class="team-score ${getScoreClass(team.total)} ${isFirst ? 'first-score' : ''}">${formatScore(team.total)}</span>
+            <span class="chevron" id="chevron-${id}">▼</span>
+          </div>
+        </div>
+        <div class="players-panel" id="panel-${id}">
+          <div class="round-header">
+            <span class="rh-name"></span>
+            ${roundHeaders}
+            <span class="rh-tot">Tot</span>
+          </div>
+          ${team.scores.map(p => {
+            const isCounting = countingNames.includes(p.name);
+            const roundCells = Array.from({length: maxR}, (_, i) => {
+              const val = p.rounds?.[i] || '-';
+              const isPenalty = p.missedCut && i >= 2 && val !== '-';
+              return `<span class="round-cell ${isPenalty ? 'penalty' : ''}">${val}</span>`;
+            }).join('');
+            const cutBadge = p.missedCut ? '<span class="cut-badge">CUT</span>' : '';
+            const wdBadge = p.withdrawn ? '<span class="wd-badge">WD</span>' : '';
+            return `
+            <div class="player-row ${isCounting ? 'counting' : 'not-counting'}">
+              <span class="player-name">${cutBadge}${wdBadge}${p.name}</span>
+              ${roundCells}
+              <span class="player-score ${getScoreClass(p.score)}">${formatScore(p.score)}</span>
+            </div>
+          `}).join('')}
+        </div>
+      </div>
+    `;
+  });
+  html += '</div>';
+  document.getElementById('app').innerHTML = html;
+  document.getElementById('lastUpdated').textContent =
+    'Last updated: ' + new Date().toLocaleTimeString();
+}
+async function fetchScores() {
+  try {
+    const response = await fetch('/api/scores');
+    const data = await response.json();
+    const playerData = processPlayerData(data);
+    renderApp(playerData);
+  } catch(error) {
+    document.getElementById('app').innerHTML =
+      '<div class="error">Failed to load scores. Retrying...</div>';
+    console.error(error);
+  }
+}
+fetchScores();
+setInterval(fetchScores, 120000);
+</script>
+</body>
+</html>
