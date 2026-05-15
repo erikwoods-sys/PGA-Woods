@@ -220,13 +220,13 @@
 </div>
 <script>
 const TEAMS = {
-  'Næsheim': ['Scheffler', 'Fitzpatrick', 'Reitan', 'Smith', 'Kirk'],
+  'Næsheim': ['Scheffler', 'M. Fitzpatrick', 'Reitan', 'C. Smith', 'Kirk'],
   'Grouff': ['Scheffler', 'Reitan', 'Harman', 'Kirk', 'McIlroy'],
-  'Forthun': ['Fitzpatrick', 'Reitan', 'Theegala', 'Kirk', 'Schauffele'],
+  'Forthun': ['M. Fitzpatrick', 'Reitan', 'Theegala', 'Kirk', 'Schauffele'],
   'Norheim': ['Scheffler', 'Reed', 'Cauley', 'Lipsky', 'Højgaard'],
   'Haukvik': ['Scheffler', 'Spieth', 'Harman', 'Jarvis', 'Fleetwood'],
   'Daffinrud': ['McIlroy', 'Lowry', 'Rai', 'Fisk', 'Young'],
-  'Heidenreich': ['Rose', 'Fitzpatrick', 'Rai', 'Donald', 'Hatton'],
+  'Heidenreich': ['Rose', 'M. Fitzpatrick', 'Rai', 'Donald', 'Hatton'],
   'Wroll': ['McIlroy', 'Reitan', 'Harman', 'Riley', 'Young'],
   'Baumann': ['Scheffler', 'Reitan', 'Rai', 'Snedeker', 'Young'],
   'Magelssen': ['Åberg', 'Lowry', 'Rai', 'Hoge', 'Fowler'],
@@ -235,7 +235,7 @@ const TEAMS = {
   'Ekjord': ['Scheffler', 'Reitan', 'Echavarria', 'Grillo', 'Rose'],
   'Holter': ['Hovland', 'Noren', 'Neergaard-Petersen', 'Välimäki', 'Reitan'],
   'Woods': ['McIlroy', 'Lowry', 'Rai', 'Saddier', 'Schauffele'],
-  'Møller': ['Scheffler', 'Young', 'Harman', 'Välimäki', 'Fitzpatrick', 'Smith']
+  'Møller': ['Scheffler', 'Young', 'Harman', 'Välimäki']
 };
 
 const CUT_LINE = 999;
@@ -265,6 +265,7 @@ function processPlayerData(espnData) {
     competitions.forEach(comp => {
       const name = comp.athlete?.displayName || '';
       const lastName = name.split(' ').slice(-1)[0];
+      const shortName = comp.athlete?.shortName || '';
       const status = comp.status?.type?.name || '';
       const withdrawn = status === 'STATUS_WITHDRAWN';
       const espnRounds = comp.linescores?.map(r => r.displayValue || '-') || [];
@@ -291,7 +292,7 @@ function processPlayerData(espnData) {
           + (r4val !== null ? r4val : 0)
         );
       }
-      players[lastName] = {
+      const playerData = {
         fullName: name,
         score: withdrawn ? 999 : totalScore,
         missedCut,
@@ -299,6 +300,13 @@ function processPlayerData(espnData) {
         position: comp.status?.position?.displayName || '-',
         rounds
       };
+      // Store by last name
+      players[lastName] = playerData;
+      // Also store by shortName (e.g. "M. Fitzpatrick")
+      if (shortName) players[shortName] = playerData;
+      // Store by first initial + last name
+      const firstInitial = name.split(' ')[0][0];
+      players[firstInitial + '. ' + lastName] = playerData;
     });
   } catch(e) {
     console.error('Error processing player data:', e);
