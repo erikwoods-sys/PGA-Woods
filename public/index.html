@@ -223,7 +223,7 @@ const TEAMS = {
   'Næsheim': ['Scheffler', 'M. Fitzpatrick', 'Reitan', 'C. Smith', 'Kirk'],
   'Grouff': ['Scheffler', 'Reitan', 'Harman', 'Kirk', 'McIlroy'],
   'Forthun': ['M. Fitzpatrick', 'Reitan', 'Theegala', 'Kirk', 'Schauffele'],
-'Norheim': ['Scheffler', 'Reed', 'Cauley', 'Lipsky', 'N. Højgaard'],
+  'Norheim': ['Scheffler', 'Reed', 'Cauley', 'Lipsky', 'N. Højgaard'],
   'Haukvik': ['Scheffler', 'Spieth', 'Harman', 'Jarvis', 'Fleetwood'],
   'Daffinrud': ['McIlroy', 'Lowry', 'Rai', 'Fisk', 'Young'],
   'Heidenreich': ['Rose', 'A. Fitzpatrick', 'Rai', 'Donald', 'Hatton'],
@@ -238,7 +238,7 @@ const TEAMS = {
   'Møller': ['Scheffler', 'Young', 'Harman', 'Välimäki']
 };
 
-const CUT_LINE = 999;
+const CUT_LINE = 5;
 const R3_START = new Date('2026-05-16T15:30:00+02:00');
 const R4_START = new Date('2026-05-17T15:30:00+02:00');
 
@@ -300,11 +300,8 @@ function processPlayerData(espnData) {
         position: comp.status?.position?.displayName || '-',
         rounds
       };
-      // Store by last name
       players[lastName] = playerData;
-      // Also store by shortName (e.g. "M. Fitzpatrick")
       if (shortName) players[shortName] = playerData;
-      // Store by first initial + last name
       const firstInitial = name.split(' ')[0][0];
       players[firstInitial + '. ' + lastName] = playerData;
     });
